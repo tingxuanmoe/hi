@@ -57,15 +57,9 @@ function create ()
     ground.create(400, 580, null).setSize(800, 40).setVisible(false);
 
     // Player
-    player = this.physics.add.sprite(100, 450, null).setSize(40, 40).setCollideWorldBounds(true);
-    player.displayOriginX = 0;
-    player.displayOriginY = 0;
-    const playerGraphics = this.add.graphics();
-    playerGraphics.fillStyle(0xFF6347, 1.0);
-    playerGraphics.fillRect(0, 0, 40, 40);
-    playerGraphics.x = player.x;
-    playerGraphics.y = player.y;
-    player.playerGraphics = playerGraphics;
+    player = this.add.rectangle(100, 450, 40, 40, 0xFF6347);
+    this.physics.add.existing(player);
+    player.body.setCollideWorldBounds(true);
 
 
     // Collision
@@ -131,72 +125,51 @@ function update ()
 
     timerText.setText('Time: ' + Math.ceil(60 - timer.getElapsedSeconds()));
 
-    if (player) {
-        player.playerGraphics.x = player.x;
-        player.playerGraphics.y = player.y;
-
-        if (this.input.activePointer.isDown) {
-            if (this.input.activePointer.x < player.x) {
-                player.setVelocityX(-160);
-            } else if (this.input.activePointer.x > player.x) {
-                player.setVelocityX(160);
-            } else {
-                player.setVelocityX(0);
-            }
+    if (this.input.activePointer.isDown) {
+        if (this.input.activePointer.x < player.x) {
+            player.body.setVelocityX(-160);
+        } else if (this.input.activePointer.x > player.x) {
+            player.body.setVelocityX(160);
         } else {
-            player.setVelocityX(0);
+            player.body.setVelocityX(0);
         }
+    } else {
+        player.body.setVelocityX(0);
     }
 
-    // Update obstacles
+    // Recycle obstacles
     obstacles.getChildren().forEach(obstacle => {
-        if (obstacle.obstacleGraphics) {
-            obstacle.obstacleGraphics.x = obstacle.x;
-            obstacle.obstacleGraphics.y = obstacle.y;
-        }
-
         if (obstacle.x < -100) {
-            if (obstacle.obstacleGraphics) {
-                obstacle.obstacleGraphics.destroy();
-            }
             obstacle.destroy();
         }
     });
 }
 
 function addObstacle(x, y, width, height) {
-    const obstacle = this.add.graphics();
-    obstacle.fillStyle(0x2E8B57, 1.0);
-    obstacle.fillRect(0, 0, width, height);
-
-    const obstacleBody = this.physics.add.image(x, y).setOrigin(0, 0);
-    obstacleBody.body.setSize(width, height);
-    obstacleBody.body.setAllowGravity(false);
-    obstacleBody.body.setImmovable(true);
-    obstacleBody.setVelocityX(-200);
-
-    obstacleBody.obstacleGraphics = obstacle;
-    obstacles.add(obstacleBody);
+    const obstacle = this.add.rectangle(x, y, width, height, 0x2E8B57);
+    this.physics.add.existing(obstacle);
+    obstacle.body.setAllowGravity(false);
+    obstacle.body.setImmovable(true);
+    obstacle.body.setVelocityX(-200);
+    obstacles.add(obstacle);
 }
 
 function addObstacleRow() {
-    const hole = Math.floor(Math.random() * 5) + 1;
-    const holeHeight = 200;
+    const gapHeight = 200;
     const obstacleWidth = 80;
-    const totalHeight = 600;
+    const gameHeight = 600;
 
-    for (let i = 0; i < 10; i++) {
-        if (i !== hole && i !== hole + 1) {
-            const y = i * (totalHeight / 10);
-            addObstacle.call(this, 800, y, obstacleWidth, totalHeight / 10);
-        }
-    }
+    const gapPosition = Math.random() * (gameHeight - gapHeight);
+    const topObstacleHeight = gapPosition;
+    const bottomObstacleHeight = gameHeight - (gapPosition + gapHeight);
 
-    const scoringZone = this.physics.add.image(800 + obstacleWidth, 0).setOrigin(0, 0);
-    scoringZone.body.setSize(10, totalHeight);
+    addObstacle.call(this, 800, topObstacleHeight / 2, obstacleWidth, topObstacleHeight);
+    addObstacle.call(this, 800, gameHeight - bottomObstacleHeight / 2, obstacleWidth, bottomObstacleHeight);
+
+    const scoringZone = this.add.zone(800 + obstacleWidth / 2, gameHeight / 2, 10, gameHeight);
+    this.physics.add.existing(scoringZone);
     scoringZone.body.setAllowGravity(false);
-    scoringZone.body.setImmovable(true);
-    scoringZone.setVelocityX(-200);
+    scoringZone.body.setVelocityX(-200);
     scoringZones.add(scoringZone);
 }
 
