@@ -141,6 +141,15 @@ function update ()
     obstacles.getChildren().forEach(obstacle => {
         if (obstacle.x < -100) {
             obstacle.destroy();
+        } else {
+            obstacle.body.setVelocityX(-200);
+        }
+    });
+    scoringZones.getChildren().forEach(zone => {
+        if (zone.x < -100) {
+            zone.destroy();
+        } else {
+            zone.body.setVelocityX(-200);
         }
     });
 }
@@ -150,7 +159,6 @@ function addObstacle(x, y, width, height) {
     this.physics.add.existing(obstacle);
     obstacle.body.setAllowGravity(false);
     obstacle.body.setImmovable(true);
-    obstacle.body.setVelocityX(-200);
     obstacles.add(obstacle);
 }
 
@@ -169,7 +177,6 @@ function addObstacleRow() {
     const scoringZone = this.add.zone(800 + obstacleWidth / 2, gameHeight / 2, 10, gameHeight);
     this.physics.add.existing(scoringZone);
     scoringZone.body.setAllowGravity(false);
-    scoringZone.body.setVelocityX(-200);
     scoringZones.add(scoringZone);
 }
 
